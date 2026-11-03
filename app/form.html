@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact Us</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 40px 16px; }
+    .card { max-width: 480px; margin: auto; background: #fff; padding: 28px; border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    h1 { margin-top: 0; font-size: 1.4rem; }
+    label { display: block; margin: 14px 0 4px; font-size: 0.9rem; color: #333; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+                      font-size: 1rem; box-sizing: border-box; }
+    textarea { min-height: 110px; resize: vertical; }
+    button { margin-top: 18px; width: 100%; padding: 12px; background: #2563eb; color: #fff;
+             border: 0; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+    button:disabled { background: #93a8d8; cursor: wait; }
+    #result { margin-top: 16px; font-size: 0.95rem; }
+    .ok { color: #166534; } .err { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Get in touch</h1>
+    <p>Tell us what you need and we'll reply shortly.</p>
+    <label for="name">Name</label>
+    <input id="name" placeholder="Your name">
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="you@example.com">
+    <label for="phone">Phone (optional)</label>
+    <input id="phone" placeholder="Phone number">
+    <label for="message">How can we help?</label>
+    <textarea id="message" placeholder="Describe what you're looking for"></textarea>
+    <button id="send">Send enquiry</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById("send");
+    const result = document.getElementById("result");
+
+    btn.addEventListener("click", async () => {
+      const payload = {
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        message: document.getElementById("message").value.trim(),
+      };
+
+      if (!payload.name || !payload.email || !payload.message) {
+        result.className = "err";
+        result.textContent = "Please fill in your name, email and message.";
+        return;
+      }
+
+      btn.disabled = true;
+      result.className = "";
+      result.textContent = "Sending...";
+
+      try {
+        const response = await fetch("/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error("Request failed");
+        result.className = "ok";
+        result.textContent = "Thanks! We've received your enquiry and will be in touch soon.";
+        document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+      } catch (error) {
+        result.className = "err";
+        result.textContent = "Something went wrong. Please try again.";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

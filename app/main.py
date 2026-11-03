@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.db import get_conn, init_db
@@ -7,12 +10,19 @@ from app.scoring import analyze_lead
 app = FastAPI(title="AI Lead Automation")
 init_db()
 
+FORM_PATH = Path(__file__).parent / "form.html"
+
 
 class LeadIn(BaseModel):
     name: str
     email: str
     phone: str = ""
     message: str
+
+
+@app.get("/", include_in_schema=False)
+def form_page():
+    return FileResponse(FORM_PATH)
 
 
 @app.post("/leads")
